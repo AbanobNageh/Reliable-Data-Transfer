@@ -3,7 +3,9 @@ package rdt;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-
+/**
+ * represents a TCP packet.
+ */
 public class TCPPacket implements Comparable<TCPPacket>{
 	short checkSum;
 	short sourcePort;
@@ -16,10 +18,19 @@ public class TCPPacket implements Comparable<TCPPacket>{
 	boolean fileData = false;
 	byte[] data;
 	
+	/**
+	 * Creates an empty TCP Packet, used when decoding a received packet.
+	 */
 	public TCPPacket() {
-		
 	}
 
+	/**
+	 * creates a new TCP packet from the given arguments.
+	 * @param sourcePort the port that the packet will be sent from.
+	 * @param destinationPort the port that the packet will be sent to.
+	 * @param sequanceNumber the sequance number of this packet.
+	 * @param data the data to be added to this packet.
+	 */
 	public TCPPacket(short sourcePort, short destinationPort, short sequanceNumber, byte[] data) {
 		this.sourcePort = sourcePort;
 		this.destinationPort = destinationPort;
@@ -28,8 +39,11 @@ public class TCPPacket implements Comparable<TCPPacket>{
 		this.lenght = (short) (12 + data.length);
 	}
 	
-	// This function encodes the data in this packet into an array of bytes
-	// in order to place it inside a DatagramSocket.
+	/**
+	 * encodes the data of this packet into an array of bytes, in order 
+	 * to send it by using a DatagramSocket.
+	 * @return an array of bytes that contains the data of this packet.
+	 */
 	public byte[] encode() {
 		ArrayList<Byte> byteArrayList = new ArrayList<Byte>();
 		byte[] sourcePortBytes = this.shortToBytes(this.sourcePort);
@@ -115,7 +129,10 @@ public class TCPPacket implements Comparable<TCPPacket>{
 		return byteArray;
 	}
 	
-	// Extracts the data inside the bytes array back.
+	/**
+	 * decodes an array of encoded data back to a packet.
+	 * @param data an array of bytes that represent an encoded packet.
+	 */
 	public void decode(byte data[]) {
 		ArrayList<Byte> byteArrayList = new ArrayList<Byte>();
 		int currentIndex = 0;
@@ -206,7 +223,11 @@ public class TCPPacket implements Comparable<TCPPacket>{
 		}
 	}
 	
-	// Calculate checksum.
+	/**
+	 * calculates the checksum of an array of bytes.
+	 * @param buf the array of bytes.
+	 * @return the checksum of these bytes as short.
+	 */
 	public short calculateChecksum(byte[] buf) {
 	    int length = buf.length;
 	    int i = 0;
@@ -285,10 +306,20 @@ public class TCPPacket implements Comparable<TCPPacket>{
 		this.finalPacket = finalPacket;
 	}
 
+	/**
+	 * converts a short data type to bytes.
+	 * @param value the short value to be convertd to bytes.
+	 * @return the short value as an array of bytes.
+	 */	
     public byte[] shortToBytes(short value) {
         return ByteBuffer.allocate(2).order(ByteOrder.BIG_ENDIAN).putShort(value).array();
     }
-    
+	
+	/**
+	 * converts a byte array back to short.
+	 * @param value the array of bytes to convert to short.
+	 * @return the array of bytes as a short data type.
+	 */
     public short bytesToShort(byte[] bytes) {
         return ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN).getShort();
     }

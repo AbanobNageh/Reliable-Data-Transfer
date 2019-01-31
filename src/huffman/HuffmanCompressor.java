@@ -23,6 +23,11 @@ public class HuffmanCompressor {
 	PriorityQueue<HuffmanNode> nodes = new PriorityQueue<HuffmanNode>();
 	String[] codeTable = new String[256];
 	
+	/**
+	 * used to compress and then decompress a file, also prints the time taken to finish these two operations,
+	 * the time is in milliseconds.
+	 * @param filePath the path to the file.
+	 */
 	public void compressAndDecompressFile(String filePath) {
 		long startTime = System.currentTimeMillis();
 		File sourceFile = new File (filePath);
@@ -33,6 +38,11 @@ public class HuffmanCompressor {
 		System.out.println("time taken:" + (endTime - startTime) + " ms");
 	}
 	
+	/**
+	 * used to compress and then decompress a folder, also prints the time taken to finish these two operations,
+	 * the time is in milliseconds.
+	 * @param folderPath the path to the folder.
+	 */
 	public void compressAndDecompressFolder(String folderPath) {
 		long startTime = System.currentTimeMillis();
 		File sourceFolder = new File (folderPath);
@@ -43,6 +53,11 @@ public class HuffmanCompressor {
 		System.out.println("time taken:" + (endTime - startTime) + " ms");
 	}
 	
+	/**
+	 * builds a frequency table from the data of a file and generaates a huffman node for 
+	 * each character that has a frequency greater than 0. 
+	 * @param textBytes the data of a file as an array of unsigned bytes.
+	 */
 	private void buildFrequencyTable(int[] textBytes) {
 		for (int i = 0; i < textBytes.length; i++) {
 			if (textBytes[i] == 1111) {
@@ -59,8 +74,11 @@ public class HuffmanCompressor {
 		}
 	}
 	
+	/**
+	 * builds a huffman tree from the generated huffman nodes.
+	 * @return the root node in the tree.
+	 */
 	private HuffmanNode buildHuffmanTree() {
-		int nodeCount = this.nodes.size();
 		HuffmanNode left, right;
 		
 		while (this.nodes.size() > 1) {
@@ -75,6 +93,11 @@ public class HuffmanCompressor {
 		return this.nodes.poll();
 	}
 	
+	/**
+	 * used to compress a file, also prints the time taken to finish this operation,
+	 * the time is in milliseconds.
+	 * @param filePath the path to the file.
+	 */
 	public void compressFile(String filePath) {
 		for (int i = 0; i < this.codeTable.length; i++) {
 			this.codeTable[i] = "";
@@ -88,6 +111,11 @@ public class HuffmanCompressor {
 		printCompressedFile(filePath, fileBytes);
 	}
 	
+	/**
+	 * used to compress a folder, also prints the time taken to finish this operation,
+	 * the time is in milliseconds.
+	 * @param folderPath the path to the folder.
+	 */
 	private void compressFolder (String folderPath) {
 		File folder = new File(folderPath);
 		int[] fileBytes = readFiles(folder);
@@ -97,6 +125,11 @@ public class HuffmanCompressor {
 		printCompressedFolder(folder, fileBytes);
 	}
 	
+	/**
+	 * used to decompress a file, also prints the time taken to finish this operation,
+	 * the time is in milliseconds.
+	 * @param filePath the path to the compressed file.
+	 */
 	public void deCommpressFile(String filePath) {
 		String[] compressedFileData;
 		
@@ -106,10 +139,15 @@ public class HuffmanCompressor {
 		}
 		
 		compressedFileData = this.readCompressedFile(filePath);
-		HuffmanNode root = buildHuffmanTree();
+		buildHuffmanTree();
 		printDecompressedFile(compressedFileData[0], compressedFileData);
 	}
 	
+	/**
+	 * used to decompress a folder from a compressed file, also prints the time taken to finish this operation,
+	 * the time is in milliseconds.
+	 * @param folderPath the path to the compressed file.
+	 */
 	private void deCompressFolder(String folderPath) {
 		String[] compressedFileData;
 		
@@ -119,11 +157,16 @@ public class HuffmanCompressor {
 		}
 		
 		compressedFileData = this.readCompressedFolder(folderPath);
-		HuffmanNode root = buildHuffmanTree();
+		buildHuffmanTree();
 		printDecompressedFolder(compressedFileData[0], compressedFileData);
 		
 	}
 	
+	/**
+	 * used to recursively loop over the huffman node and generate a code table.
+	 * @param node the current node to process, initially it is the root node.
+	 * @param code the code of the current step, initially it is an empty string.
+	 */
 	private void generateCodeTable(HuffmanNode node, String code) {
 		if (node == null) {
 			return;
@@ -140,6 +183,11 @@ public class HuffmanCompressor {
 		}
 	}
 	
+	/**
+	 * returns the index of the given character in the code table and -1 if the character is not found.
+	 * @param code the character to get the index of.
+	 * @return the index of the character and -1 if the character is not found.
+	 */
 	private int getCharacterIndex(String code) {
 		for (int i = 0; i < this.codeTable.length; i++){
 			if (codeTable[i].equals(code)) {
@@ -150,21 +198,29 @@ public class HuffmanCompressor {
 		return -1;
 	}
 	
+	/**
+	 * used to create the output file and then print the content of the output file.
+	 * @param filePath the path of the compressed file.
+	 * @param fileBytes the unsigned bytes of the input file.
+	 */
 	private void printCompressedFile(String filePath, int[] fileBytes) {
 		try {
 			File sourceFile = new File(filePath);
 			String fileName = sourceFile.getName().substring(0, sourceFile.getName().lastIndexOf("."));
 			String fileFormat = sourceFile.getName().substring(sourceFile.getName().lastIndexOf("."));
 			
+			// create the output file
 			File File = new File(fileName + "-compressed.txt");
 			FileWriter writer = new FileWriter(File);
 			BufferedWriter bufferedWriter = new BufferedWriter(writer);
 			
+			// write the file name and extension.
 			bufferedWriter.write(fileName);
 			bufferedWriter.newLine();
 			bufferedWriter.write(fileFormat);
 			bufferedWriter.newLine();
 			
+			// write each character, its frequency and its code.
 			for (int i = 0; i < this.frequencyTable.length; i++) {
 				if (this.frequencyTable[i] == 0) {
 					continue;
@@ -172,6 +228,7 @@ public class HuffmanCompressor {
 				bufferedWriter.write(i + " " + this.frequencyTable[i] + " " + this.codeTable[i]);
 				bufferedWriter.newLine();
 			}
+			// '--' is used to seperate the table from the data.
 			bufferedWriter.write("--");
 			bufferedWriter.newLine();
 			bufferedWriter.close();
@@ -179,6 +236,7 @@ public class HuffmanCompressor {
 			FileOutputStream writer2 = new FileOutputStream(File, true);
 			BufferedOutputStream bufferedWriter2 = new BufferedOutputStream(writer2);
 			
+			// write the data of the compressed file to the output file.
 			int index = 0;
 			String code = this.codeTable[fileBytes[index]];
 			while(index < fileBytes.length) {
@@ -218,21 +276,29 @@ public class HuffmanCompressor {
 
 	}
 	
+	/**
+	 * used to create the output file and then print the content of the output file.
+	 * @param sourceFolder the path of the compressed folder.
+	 * @param fileBytes the unsigned bytes of the input files.
+	 */
 	private void printCompressedFolder(File sourceFolder, int[] fileBytes) {
 		int currentIndex = 0;
 		int filesCount = sourceFolder.listFiles().length;
 		try {
 			String folderName = sourceFolder.getName();
 			
+			// create the output file
 			File File = new File(folderName + "-compressed.txt");
 			FileWriter writer = new FileWriter(File);
 			BufferedWriter bufferedWriter = new BufferedWriter(writer);
 			
+			// write the folder name and number of files.
 			bufferedWriter.write(folderName);
 			bufferedWriter.newLine();
 			bufferedWriter.write(Integer.toString(filesCount));
 			bufferedWriter.newLine();
 			
+			// write each character, its frequency and its code.
 			for (int i = 0; i < this.frequencyTable.length; i++) {
 				if (this.frequencyTable[i] == 0) {
 					continue;
@@ -240,10 +306,12 @@ public class HuffmanCompressor {
 				bufferedWriter.write(i + " " + this.frequencyTable[i] + " " + this.codeTable[i]);
 				bufferedWriter.newLine();
 			}
+			// '==' is used to seperate the table from the data of the files.
 			bufferedWriter.write("==");
 			bufferedWriter.newLine();
 			bufferedWriter.close();
 			
+			// loop over the files in the folder and write the data of each. 
 			for (File subFile: sourceFolder.listFiles()) {
 				String fileName = subFile.getName().substring(0, subFile.getName().lastIndexOf("."));
 				String fileFormat = subFile.getName().substring(subFile.getName().lastIndexOf("."));
@@ -304,6 +372,11 @@ public class HuffmanCompressor {
 		}
 	}
 	
+	/**
+	 * used to print the decompressed file.
+	 * @param fullFileName the name of the decompressed file.
+	 * @param compressedFileData the dat of the copressed file..
+	 */
 	private void printDecompressedFile(String fullFileName, String[] compressedFileData) {
 		try {
 			String temp = "";
@@ -329,6 +402,11 @@ public class HuffmanCompressor {
 		}
 	}
 	
+	/**
+	 * used to print the decompressed folder.
+	 * @param folderName the name of the decompressed folder.
+	 * @param compressedFolderData the dat of the copressed folder.
+	 */
 	private void printDecompressedFolder(String folderName, String[] compressedFolderData) {
 		folderName = folderName + "-decompressed";
 		File folder = new File(folderName);
@@ -362,6 +440,10 @@ public class HuffmanCompressor {
 		}
 	}
 	
+	/**
+	 * used to read the data of the compressed file.
+	 * @param filePath the path of the compressed file.
+	 */
 	private String[] readCompressedFile(String filePath) {
 		int startIndex = 0, endIndex = 0;
 		String encodedText = "";
@@ -390,7 +472,10 @@ public class HuffmanCompressor {
 			
 			bufferedReader.close();
 			
-			FileChannel channel = new FileInputStream(filePath).getChannel();
+			FileInputStream temp = new FileInputStream(filePath);
+			FileChannel channel = temp.getChannel();
+			temp.close();
+
 			MappedByteBuffer mappedByteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
 			if (mappedByteBuffer != null) {
 		        charBuffer = Charset.forName("ISO-8859-1").decode(mappedByteBuffer);
@@ -415,7 +500,6 @@ public class HuffmanCompressor {
 			
 			channel.close();
 			
-
 			String tempCode = "";
 			for (int i = startIndex; i <= endIndex; i++) {
 				tempCode = Integer.toBinaryString(charBuffer.charAt(i));
@@ -437,6 +521,10 @@ public class HuffmanCompressor {
 		return result;
 	}
 	
+	/**
+	 * used to read the data of the compressed folder from file.
+	 * @param filePath the path of the compressed file.
+	 */
 	private String[] readCompressedFolder(String filePath) {
 		int startIndex = 0, endIndex = 0;
 		String extraCode = "";
@@ -463,8 +551,10 @@ public class HuffmanCompressor {
 			}
 			
 			bufferedReader.close();
+			FileInputStream temp = new FileInputStream(filePath);
+			FileChannel channel = temp.getChannel();
+			temp.close();
 			
-			FileChannel channel = new FileInputStream(filePath).getChannel();
 			MappedByteBuffer mappedByteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
 			if (mappedByteBuffer != null) {
 		        charBuffer = Charset.forName("ISO-8859-1").decode(mappedByteBuffer);
@@ -533,6 +623,11 @@ public class HuffmanCompressor {
 		return result;
 	}
 	
+	/**
+	 * used to read an input file, reads the file and returns an array of unsigned bytes.
+	 * @param filePath the path to the input file.
+	 * @return return the file as an array of unsigned bytes.
+	 */	
 	private int[] readFile(String filePath) {
 		int[] unsignedBytes = null;
 		try {
@@ -551,9 +646,15 @@ public class HuffmanCompressor {
 		return unsignedBytes;
 	}
 	
+	/**
+	 * used to read a the files in a folder, reads the files and returns an array of unsigned bytes.
+	 * the data of the files in the returned array are seperated by '1111'.
+	 * @param sourceFolder the path to the input folder.
+	 * @return return the folder as an array of unsigned bytes.
+	 */
 	private int[] readFiles(File sourceFolder) {
 		ArrayList<Integer> byteList = new ArrayList<Integer>();
-		int[] unsignedBytes = null;
+
 		try {
 			for (File file: sourceFolder.listFiles()) {
 				byte[] byteArray = Files.readAllBytes(file.toPath());

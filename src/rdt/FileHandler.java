@@ -5,12 +5,19 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 
 import huffman.HuffmanCompressor;
-
+/**
+ * this class is responsible for reading files and preprocessing them before they are
+ * sent by the server.
+ * 
+ */
 public class FileHandler {
 	private static FileHandler instance = null;
 	HuffmanCompressor huffman = new HuffmanCompressor();
 	int packetSize = 1000;
 	
+	/**
+	 * return an instance of this singleton class.
+	 */
 	public static FileHandler getFileHandler() {
 		if (instance == null) {
 			instance = new FileHandler();
@@ -18,7 +25,14 @@ public class FileHandler {
 		return instance;
 	}
 	
-	// reads file and divides it into packets.
+	/**
+	 * reads a file, compresses it and then split this file into an array of TCPPackets.
+	 * this method is synchronized.
+	 * @param filePath the path to the input file.
+	 * @param sourcePort the port that the packet will be sent from, must be set in the packet.
+	 * @param destinationPort the port that the packet will be sent to, must be set in the packet.
+	 * @return an arraylist of TCPPackets that the file has been divided into.
+	 */
 	public synchronized ArrayList<TCPPacket> getFilePackets(String filePath, short sourcePort, short destinationPort) {
 		byte[] byteArray = null;
 		byte[] tempArray = new byte[packetSize];

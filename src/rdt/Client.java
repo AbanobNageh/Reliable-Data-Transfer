@@ -17,7 +17,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import huffman.HuffmanCompressor;
-
+/**
+ * this class represents a client, this client receives packets from the server and sends 
+ * Ack. packets in return.
+ */
 public class Client extends Thread{
 	InetAddress serverIP;
 	short serverPort;
@@ -34,6 +37,9 @@ public class Client extends Thread{
 	CopyOnWriteArrayList<Short> recivedPacketNumbers = new CopyOnWriteArrayList<Short>();
 	ConcurrentLinkedQueue<TCPPacket> recivedPackets = new ConcurrentLinkedQueue<TCPPacket>();
 	
+	/**
+	 * creates a new client, reads the client data from file.
+	 */
 	public Client() {
 		try {
 			this.loadClientFromFile();
@@ -44,6 +50,13 @@ public class Client extends Thread{
 		}
 	}
 	
+	/**
+	 * creates a new client, takes client data as parameters.
+	 * @param serverIP the IP of the server to communicate with.
+	 * @param serverPort the port of the server to communicate with.
+	 * @param clientPort the port of the client that is used during communication.
+	 * @param fileName the file to request from the server.
+	 */
 	public Client(String serverIP, short serverPort, String clientIP, short clientPort, String fileName) {
 		try {
 			this.serverIP = InetAddress.getByName(serverIP);
@@ -63,6 +76,10 @@ public class Client extends Thread{
 		
 	}
 
+	/**
+	 * starts the client, requests the file and then starts two threads, the first threads receives the 
+	 * file packets from the server and the second sends an Ack. packet for every file packet that is sent.
+	 */
 	@Override
 	public void run() {
 		try {
@@ -95,6 +112,9 @@ public class Client extends Thread{
 		}
 	}
 	
+	/**
+	 * writes the received array of bytes to file and then decompresses the file.
+	 */
 	public void writeFile() {
 		ArrayList<Byte> byteArrayList = new ArrayList<Byte>();
 		ArrayList<TCPPacket> filePackets = new ArrayList<TCPPacket>();
@@ -130,7 +150,12 @@ public class Client extends Thread{
 		}
 	}
 	
-	// randomly drop packet.
+	/**
+	 * simulates the action of dropping packets in a channel, it returns a boolean that describes 
+	 * if the received packet was dropped in the channel.
+	 * @param lossProbability the probability that the channel will drop a packet.
+	 * @return a boolean that is true if the packet was dropped and false otherwise.
+	 */
 	private boolean dropPacket(int lossProbability) {
 		Random randomNumberGenerator = new Random();
 		int randomNumber = randomNumberGenerator.nextInt(100);
@@ -142,7 +167,12 @@ public class Client extends Thread{
 		return false;
 	}
 	
-	// randomly corrupt packet.
+	/**
+	 * simulates the action of corrupting packets in a channel, it returns a boolean that describes 
+	 * if the received packet was corrupted in the channel.
+	 * @param corruptProbability the probability that the channel will corrupt a packet.
+	 * @return a boolean that is true if the packet was corrupted and false otherwise.
+	 */
 	private boolean corruptPacket(int corruptProbability) {
 		Random randomNumberGenerator = new Random();
 		int randomNumber = randomNumberGenerator.nextInt(100);
@@ -162,6 +192,9 @@ public class Client extends Thread{
 		this.corruptProbability = corruptProbability;
 	}
 
+	/**
+	 * loads the client data from file.
+	 */
 	public void loadClientFromFile() {
 		String tempString;
 		
@@ -196,12 +229,18 @@ public class Client extends Thread{
 		}
 	}
 	
+	/**
+	 *  this class handles receiving the requested file data from the servers.
+	 */
 	private class ClientDataHandler extends Thread {
 		boolean reciving = false;
 		boolean lastPacketRecived = false;
 		boolean allPacketsReceived = false;
 		short lastPacketNumber;
 		
+		/**
+		 * starts the client data handler, this thread receives the file packets from the server.
+		 */
 		@Override
 		public void run() {
 			try {
@@ -212,21 +251,26 @@ public class Client extends Thread{
 				
 				// set the flag to stop requesting the file from the server.
 				this.reciving = true;
-				recivePacket(recivedPacket);
+				receivePacket(recivedPacket);
 				
 				// Keep receiving the data packet until the last packet is received.
 				while(!lastPacketRecived || !allPacketsReceived) {
 					packetBuffer = new byte[packetSize + 12];
 					recivedPacket = new DatagramPacket(packetBuffer, packetBuffer.length);
 					recivingSocket.receive(recivedPacket);
-					recivePacket(recivedPacket);
+					receivePacket(recivedPacket);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 
-		public void recivePacket(DatagramPacket recivedDatagram) {
+		/**
+		 * receive and process a packet, this is done by creating an Ack. packet for each received data packet
+		 * and also mark the transmission as done once it ends.
+		 * @param recivedDatagram the received Datagram that was received.
+		 */
+		public void receivePacket(DatagramPacket recivedDatagram) {
 			// Decode the received packet.
 			byte[] encodedData = recivedDatagram.getData();
 			TCPPacket recivedPacket = new TCPPacket();
@@ -277,11 +321,19 @@ public class Client extends Thread{
 		}
 	}
 	
+	/**
+	 * starts the client Ack. handler, this thread sends an Ack. packet to the server for every
+	 * data packet received.
+	 */
 	private class ClientACKHandler extends Thread{
 		boolean lastACKPacketSent = false;
 		boolean allACKPacketSent = false;
 		short lastACKPacketNumber;
 		
+		/**
+		 * start thr client Ack. handler, this thread sends an Ack. packet for every received 
+		 * data packet.
+		 */
 		@Override
 		public void run() {
 			try {

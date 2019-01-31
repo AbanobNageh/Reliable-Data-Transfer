@@ -11,17 +11,23 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * this class represents a server, this class receives requests from the clients and send 
+ * the requested files.
+ */
 public class Server extends Thread{
 	InetAddress serverIP;
 	short serverPort;
 	DatagramSocket sendingSocket;
 	DatagramSocket receivingSocket;
-	int protocol = 1;         // Protocol ID, 1 = stop and wait, 2 = selective repeat, 3 = go back N.
+	int protocol = 1;        // Protocol ID, 1 = stop and wait, 2 = selective repeat, 3 = go back N.
 	int windowSize;           
 	int timeOut = 500;        // Timeout until the server stops listening.
 	FileHandler fileHandler = FileHandler.getFileHandler();
 	
-	// this constructor creates the server from data found in server.txt.
+	/**
+	 * cretes a new server, reads the server data from file.
+	 */
 	public Server() {
 		try {
 			this.loadServerFromFile();
@@ -33,7 +39,12 @@ public class Server extends Thread{
 		}
 	}
 	
-	// creates server from given data.
+	/**
+	 * creates a new server from the given arguments.
+	 * @param serverIP the IP of the server.
+	 * @param serverPort the port that the server will receive on.
+	 * @param windowSize the number of packets that should be sent together.
+	 */
 	public Server (String serverIP, short serverPort, int windowSize) {
 		try {
 			this.serverIP = InetAddress.getByName(serverIP);
@@ -50,6 +61,12 @@ public class Server extends Thread{
 		}
 	}
 
+	/**
+	 * starts the server, the servers starts to listen to requests from clients, 
+	 * it listens for requests, if a request arrives the server starts a new thread to 
+	 * send data to the user and receive the user's Acks. 
+	 * the server stops listening after a timeout. 
+	 */
 	@Override
 	public void run() {
 		try {
@@ -149,7 +166,12 @@ public class Server extends Thread{
 			e2.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 * returns the length of a packet.
+	 * @param encodedData data of the packet
+	 * @return the length of the packet.
+	 */
 	public int getPacketLength(byte[] encodedData) {
 		int firstNonZeroIndex = 0;
 		for (int i = encodedData.length - 1; i > 0; i--) {
@@ -166,6 +188,9 @@ public class Server extends Thread{
 		this.protocol = protocol;
 	}
 	
+	/**
+	 * load the server data from file.
+	 */
 	public void loadServerFromFile() {
 		String tempString;
 		
@@ -190,7 +215,9 @@ public class Server extends Thread{
 			e.printStackTrace();
 		}
 	}
-	
+	/**
+	 * a server thread that sends data accourding to the stop and wait protocol.
+	 */
 	private class stopAndWaitHandler extends Thread{
 		int currentIndex = 0;
 		int lastACKReceived = -1;
@@ -199,6 +226,11 @@ public class Server extends Thread{
 		ArrayList<TCPPacket> filePackets;
 		DatagramSocket sendingSocket;
 		
+		/**
+		 * creates a new stop and wait protocol thread.
+		 * @param receivedPacket the request packet sent by the client.
+		 * @param clientIP the IP of the client.
+		 */
 		public stopAndWaitHandler(TCPPacket receivedPacket, InetAddress clientIP) {
 			try {
 				this.clientIP = clientIP;
@@ -210,6 +242,9 @@ public class Server extends Thread{
 			}
 		}
 
+		/**
+		 * starts sending the packets of the requested file to the client.
+		 */
 		@Override
 		public void run() {
 			try {
@@ -252,6 +287,9 @@ public class Server extends Thread{
 		}
 	}
 	
+	/**
+	 * a server thread that sends data accourding to the selective repeat protocol.
+	 */
 	private class SelectiveRepeatHandler extends Thread{
 		int windowSize;
 		short clientPort;
@@ -262,6 +300,12 @@ public class Server extends Thread{
 		CopyOnWriteArrayList<Short> recivedACKNumbers = new CopyOnWriteArrayList<Short>();
 		DatagramSocket sendingSocket;
 		
+		/**
+		 * creates a new selective repeat protocol thread.
+		 * @param receivedPacket the request packet sent by the client.
+		 * @param clientIP the IP of the client.
+		 * @param windowsSize the number of packets activly being sent.
+		 */
 		public SelectiveRepeatHandler(TCPPacket receivedPacket, InetAddress clientIP, int windowsSize) {
 			try {
 				this.windowSize = windowsSize;
@@ -274,6 +318,9 @@ public class Server extends Thread{
 			}
 		}
 
+		/**
+		 * starts sending the packets of the requested file to the client.
+		 */
 		@Override
 		public void run() {
 			int currentWindowSize = 0;
@@ -358,7 +405,10 @@ public class Server extends Thread{
 			}
 		}
 	}
-	
+
+	/**
+	 * a server thread that sends data accourding to the go back n protocol.
+	 */
 	private class GoBackNHandler extends Thread{
 		int windowSize;
 		short clientPort;
@@ -370,6 +420,12 @@ public class Server extends Thread{
 		CopyOnWriteArrayList<Short> recivedACKNumbers = new CopyOnWriteArrayList<Short>();
 		DatagramSocket sendingSocket;
 		
+		/**
+		 * creates a new selective repeat protocol thread.
+		 * @param receivedPacket the request packet sent by the client.
+		 * @param clientIP the IP of the client.
+		 * @param windowsSize the number of packets activly being sent.
+		 */
 		public GoBackNHandler(TCPPacket receivedPacket, InetAddress clientIP, int windowsSize) {
 			try {
 				this.windowSize = windowsSize;
@@ -382,6 +438,9 @@ public class Server extends Thread{
 			}
 		}
 
+		/**
+		 * starts sending the packets of the requested file to the client.
+		 */
 		@Override
 		public void run() {
 			int currentWindowSize = 0;

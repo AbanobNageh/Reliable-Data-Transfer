@@ -3,7 +3,9 @@ package rdt;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-
+/**
+ * this class represents a ACK packet.
+ */
 public class ACKPacket {
 	short checkSum;
 	short ackNumber;
@@ -11,16 +13,27 @@ public class ACKPacket {
 	boolean finalACKPacket = false;
 	boolean corrupted = false;
 	
+	/**
+	 * Creates an empty ACKPacket, used when decoding a received packet.
+	 */
 	public ACKPacket() {
-		
 	}
 	
+	/**
+	 * creates a new acknowledgment packet.
+	 * @param ackNumber the number to give this packet.
+	 * @param sourcePort the source port this packet is sent from.
+	 */
 	public ACKPacket(short ackNumber, short sourcePort) {
 		this.ackNumber = ackNumber;
 		this.sourcePort = sourcePort;
 	}
-	// This function encodes the data in this packet into an array of bytes
-		// in order to place it inside a DatagramSocket.
+	
+	/**
+	 * encodes the data of this packet into an array of bytes, in order 
+	 * to send it by using a DatagramSocket.
+	 * @return an array of bytes that contains the data of this packet.
+	 */
 	public byte[] encode() {
 		ArrayList<Byte> byteArrayList = new ArrayList<Byte>();
 		byte[] ackNumberBytes = this.shortToBytes(this.ackNumber);
@@ -64,7 +77,10 @@ public class ACKPacket {
 		return byteArray;
 	}
 	
-	// Extracts the data inside the bytes array back.
+	/**
+	 * decodes an array of encoded data back to a packet.
+	 * @param data an array of bytes that represent an encoded packet.
+	 */
 	public void decode(byte data[]) {
 		ArrayList<Byte> byteArrayList = new ArrayList<Byte>();
 		int currentIndex = 0;
@@ -115,6 +131,11 @@ public class ACKPacket {
 		}
 	}
 	
+	/**
+	 * calculates the checksum of an array of bytes.
+	 * @param buf the array of bytes.
+	 * @return the checksum of these bytes as short.
+	 */
 	public short calculateChecksum(byte[] buf) {
 	    int length = buf.length;
 	    int i = 0;
@@ -166,11 +187,19 @@ public class ACKPacket {
 	public boolean isCorrupted() {
 		return corrupted;
 	}
-
+	/**
+	 * converts a short data type to bytes.
+	 * @param value the short value to be convertd to bytes.
+	 * @return the short value as an array of bytes.
+	 */
 	public byte[] shortToBytes(short value) {
         return ByteBuffer.allocate(2).order(ByteOrder.BIG_ENDIAN).putShort(value).array();
     }
-    
+    /**
+	 * converts a byte array back to short.
+	 * @param value the array of bytes to convert to short.
+	 * @return the array of bytes as a short data type.
+	 */
     public short bytesToShort(byte[] bytes) {
         return ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN).getShort();
     }
