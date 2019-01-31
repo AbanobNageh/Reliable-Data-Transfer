@@ -474,7 +474,7 @@ public class HuffmanCompressor {
 			
 			FileInputStream temp = new FileInputStream(filePath);
 			FileChannel channel = temp.getChannel();
-			temp.close();
+			
 
 			MappedByteBuffer mappedByteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
 			if (mappedByteBuffer != null) {
@@ -499,7 +499,8 @@ public class HuffmanCompressor {
 			}
 			
 			channel.close();
-			
+			temp.close();
+
 			String tempCode = "";
 			for (int i = startIndex; i <= endIndex; i++) {
 				tempCode = Integer.toBinaryString(charBuffer.charAt(i));
@@ -553,14 +554,16 @@ public class HuffmanCompressor {
 			bufferedReader.close();
 			FileInputStream temp = new FileInputStream(filePath);
 			FileChannel channel = temp.getChannel();
-			temp.close();
+			
 			
 			MappedByteBuffer mappedByteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
 			if (mappedByteBuffer != null) {
 		        charBuffer = Charset.forName("ISO-8859-1").decode(mappedByteBuffer);
-		    }
-			channel.close();
+			}
 			
+			channel.close();
+			temp.close();
+
 			for (int i = 0; i < filesCount; i++) {
 				for (int j = startIndex; j < charBuffer.length(); j++) {
 					if (charBuffer.get(j) == '=' && charBuffer.get(j + 1) == '=') {
